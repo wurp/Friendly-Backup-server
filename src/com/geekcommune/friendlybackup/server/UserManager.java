@@ -1,20 +1,16 @@
 package com.geekcommune.friendlybackup.server;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import com.geekcommune.friendlybackup.FriendlyBackupException;
 import com.geekcommune.friendlybackup.server.User.Eligibility;
 import com.geekcommune.friendlybackup.server.format.high.ClientUpdate;
-import com.geekcommune.identity.EncryptionUtil;
 import com.geekcommune.identity.PublicIdentity;
-import com.geekcommune.identity.PublicIdentityHandle;
 
 /**
  * Provides services to manipulate users (friends/storage nodes) on a Friendly Backup server.
@@ -45,8 +41,10 @@ public class UserManager {
 	 */
 	public void handleUpdate(ClientUpdate cu, Date date,
 			InetAddress inetAddress, int originNodePort) throws FriendlyBackupException {
-		PGPPublicKeyRing keyRing = makeKeyRing(cu.getPublicKeyRingData());
-		PublicIdentity pubIdentity = makePublicIdentity(keyRing);
+		PGPPublicKeyRing keyRing = User.makeKeyRing(cu.getPublicKeyRingData());
+		PublicIdentity pubIdentity = User.makePublicIdentity(keyRing);
+		
+		cu.verifySignature(pubIdentity);
 		
 		User user = getUser(pubIdentity, keyRing, cu, inetAddress, originNodePort, date);
 		if( cu.verifySignature(user.getPublicIdentity()) ) {
@@ -81,42 +79,11 @@ public class UserManager {
 						pubIdentity.getHandle());
 			
 			if( file.exists() ) {
-				return new User(file, directory, date);
+				return new User(file, directory);
 			}
 		}
 		
 		return new User(cu, pubIdentity, inetAddress, port, date, keyRing);
-	}
-
-	private PublicIdentity makePublicIdentity(PGPPublicKeyRing keyRing)
-		throws FriendlyBackupException {
-		try {
-			return new PublicIdentity(
-					keyRing,
-					new PublicIdentityHandle(
-							EncryptionUtil.instance().findFirstSigningKey(keyRing),
-							EncryptionUtil.instance().findFirstEncryptingKey(keyRing)
-							));
-		} catch (FriendlyBackupException e) {
-			throw new FriendlyBackupException(
-					"Could not make public identity",
-					e);
-		} catch (PGPException e) {
-			throw new FriendlyBackupException(
-					"Could not make public identity",
-					e);
-		}
-	}
-
-	private PGPPublicKeyRing makeKeyRing(byte[] publicKeyRingData)
-			throws FriendlyBackupException {
-		try {
-			return new PGPPublicKeyRing(publicKeyRingData);
-		} catch (IOException e) {
-			throw new FriendlyBackupException(
-					"Could not make public identity",
-					e);
-		}
 	}
 
 	private File getRoot() {

@@ -15,9 +15,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.geekcommune.communication.message.AbstractMessage;
+import com.geekcommune.communication.message.ClientStartupMessage;
 import com.geekcommune.communication.message.Message;
 import com.geekcommune.friendlybackup.FriendlyBackupException;
-import com.geekcommune.friendlybackup.communication.message.ClientStartupMessage;
 import com.geekcommune.friendlybackup.server.UserManager;
 import com.geekcommune.friendlybackup.server.config.BackupServerConfig;
 import com.geekcommune.friendlybackup.server.format.high.ClientUpdate;
