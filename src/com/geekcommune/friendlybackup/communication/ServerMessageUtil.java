@@ -14,6 +14,7 @@ import com.geekcommune.friendlybackup.FriendlyBackupException;
 import com.geekcommune.friendlybackup.server.UserManager;
 import com.geekcommune.friendlybackup.server.config.BackupServerConfig;
 import com.geekcommune.friendlybackup.server.format.high.ClientUpdate;
+import com.geekcommune.identity.PublicIdentityHandle;
 
 public class ServerMessageUtil extends MessageUtil {
     //private static final Logger log = Logger.getLogger(ServerMessageUtil.class);
@@ -54,7 +55,9 @@ public class ServerMessageUtil extends MessageUtil {
 								"none",
 								"none",
 								address.getHostName() + ":" +
-									csm.getOriginNodePort());
+									csm.getOriginNodePort(),
+						        new PublicIdentityHandle(0, 0));
+					
 					queueMessage(new ConfirmationMessage(
 							destination,
 							csm.getTransactionID(),
